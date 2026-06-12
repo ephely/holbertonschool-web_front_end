@@ -5,15 +5,14 @@ function outer() {
   var course = 'Holberton';
 
   function inner() {
-    alert(globalVariable + course);
+    alert(globalVariable + ' ' + course);
     var exclamation = '!';
 
     function inception() {
-      alert(globalVariable + course + exclamation);
+      alert(globalVariable + ' ' + course + exclamation);
     }
     inception();
   }
   inner();
 }
-
 outer();
