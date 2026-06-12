@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Posts List with Delete</title>
+
+    <script
+      src="https://code.jquery.com/jquery-3.7.1.min.js"
+      integrity="sha256-3gJwYp4xN5P8JrIoYNewc5hXtOD87b5iV/mQp1jLK8E="
+      crossorigin="anonymous"
+    ></script>
+
+    <script type="application/javascript">
+      function addPostRow(data) {
+        const p = $('<p>').attr('id', `row-${data.id}`);
+
+        const deleteSpan = $('<span>')
+          .text('(delete) ')
+          .css('cursor', 'pointer')
+          .on('click', function () {
+            deletePost(data.id);
+          });
+
+        const infoSpan = $('<span>').text(
+          `Post created with id ${data.id}, title: ${data.title}, author: ${data.author}`,
+        );
+
+        p.append(deleteSpan, infoSpan);
+        $('body').append(p);
+      }
+
+      function deletePost(id) {
+        $.ajax({
+          url: `http://localhost:3000/posts/${id}`,
+          type: 'DELETE',
+          success: function () {
+            $(`#row-${id}`).remove();
+          },
+          error: function () {
+            alert('Post was not deleted');
+          },
+        });
+      }
+
+      function listPosts() {
+        $.get('http://localhost:3000/posts')
+          .done(function (response) {
+            response.forEach(function (post) {
+              addPostRow(post);
+            });
+          })
+          .fail(function () {
+            alert('Server Error');
+          });
+      }
+
+      function buildForm() {
+        const form = $('<form>');
+
+        const authorDiv = $('<div>');
+        const authorLabel = $('<label>').attr('for', 'author').text('Author');
+        const authorInput = $('<input>').attr({ type: 'text', id: 'author' });
+        authorDiv.append(authorLabel, authorInput);
+
+        const titleDiv = $('<div>');
+        const titleLabel = $('<label>').attr('for', 'title').text('Title');
+        const titleTextarea = $('<textarea>').attr('id', 'title');
+        titleDiv.append(titleLabel, titleTextarea);
+
+        const submitInput = $('<input>').attr({
+          type: 'submit',
+          value: 'Submit',
+        });
+
+        form.append(authorDiv, titleDiv, submitInput);
+        $('body').append(form);
+
+        form.on('submit', function (event) {
+          event.preventDefault();
+          sendForm();
+        });
+
+        $("label[for='author']").on('click', function () {
+          $('#author').focus();
+        });
+        $("label[for='title']").on('click', function () {
+          $('#title').focus();
+        });
+      }
+
+      function sendForm() {
+        const form = $('form');
+        form.after($('<p>').text('About to send the query to the API'));
+
+        const data = {
+          author: $('#author').val(),
+          title: $('#title').val(),
+        };
+
+        $.post('http://localhost:3000/posts', data)
+          .done(function (response) {
+            addPostRow(response);
+          })
+          .fail(function () {
+            alert('Error sending the POST query');
+          });
+      }
+
+      $(document).ready(function () {
+        listPosts();
+        buildForm();
+      });
+    </script>
+  </head>
+  <body></body>
+</html>
